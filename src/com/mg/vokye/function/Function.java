@@ -1,6 +1,7 @@
 package com.mg.vokye.function;
 
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -101,5 +102,97 @@ public class Function {
         return listProduit;
     }
     
-    
+    //Function Chris : chiffre affaire 
+
+    //// function pour depense
+    public double total_depense(Connection connex, Date d1, Date d2) throws Exception {
+        // Initialize variables
+        Date date_first, date_last;
+        double total = 0;
+
+        // Swap dates if necessary to ensure date_first is earlier than date_last
+        if (d1.compareTo(d2) > 0) {
+            date_first = d2;
+            date_last = d1;
+        } else {
+            date_first = d1;
+            date_last = d2;
+        }
+
+        // Use PreparedStatement to prevent SQL injection and handle date parameters
+        String sql = "SELECT id_prix FROM depense WHERE date_depense > ? AND date_depense < ?";
+
+        try (PreparedStatement stmt = connex.prepareStatement(sql)) {
+            stmt.setDate(1, date_first);
+            stmt.setDate(2, date_last);
+
+            try (ResultSet res = stmt.executeQuery()) {
+                while (res.next()) {
+                    total += res.getDouble("id_prix");
+                }
+            }
+        } catch (Exception e) {
+            throw e;
+        }
+
+        return total;
+    }
+
+    //// Function pour vente
+    public double total_vente(Connection connex, Date d1, Date d2) throws Exception {
+        // Initialize variables
+        Date date_first, date_last;
+        double total = 0;
+
+        // Swap dates if necessary to ensure date_first is earlier than date_last
+        if (d1.compareTo(d2) > 0) {
+            date_first = d2;
+            date_last = d1;
+        } else {
+            date_first = d1;
+            date_last = d2;
+        }
+
+        // Use PreparedStatement to prevent SQL injection and handle date parameters
+        // properly
+        String sql = "SELECT id_produit, quantite FROM vente WHERE date_vente > ? AND date_vente < ?";
+
+        try (PreparedStatement stmt = connex.prepareStatement(sql)) {
+            stmt.setDate(1, date_first);
+            stmt.setDate(2, date_last);
+
+            try (ResultSet res = stmt.executeQuery()) {
+                while (res.next()) {
+                    double prixProduit = getPrixProduit(res.getDouble("id_produit"));
+                    int quantite = res.getInt("quantite");
+                    total += prixProduit * quantite;
+                }
+            }
+        } catch (Exception e) {
+            throw e;
+        }
+
+        return total;
+    }
+
+    public double getPrixProduit(Connection connex, int id_produit) throws Exception {
+        Produit pd = new Produit();
+        try{
+        pd.getById(connex, id_produit);
+        }catch(Exception e){
+            throw e;
+        }
+        return pd.getPrix();
+    }
+
+    //// Function chiffre affaire
+    public double chiffre_affaire(Connection connex, Date d1, Date d2) throws Exception {
+        double chiffre_affaire = 0;
+        try {
+            chiffre_affaire = this.total_depense(connex, d1, d2) - this.total_vente(connex, d1, d2);
+        } catch (Exception e) {
+            throw e;
+        }
+        return chiffre_affaire;
+    }
 }

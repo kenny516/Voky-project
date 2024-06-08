@@ -23,4 +23,13 @@
         <url-pattern>/vente</url-pattern>
     </servlet-mapping>
 
+    <servlet>
+        <servlet-name>ServletChiffreAffaire</servlet-name>
+        <servlet-class>com.mg.vokye.Controller.ServletChiffreAffaire</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>ServletChiffreAffaire</servlet-name>
+        <url-pattern>/chiffreAffaire</url-pattern>
+    </servlet-mapping>
+
 </web-app>
